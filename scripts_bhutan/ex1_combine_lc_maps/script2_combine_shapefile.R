@@ -5,13 +5,13 @@
 ####################################################################################
 
 #################### READ SHAPEFILES
-# shp95 <- readOGR(dsn="LUPP1995.shp",layer = "LUPP1995" )
-# shp10 <- readOGR(dsn="lc_2010.shp" ,layer = "lc_2010" )
-# shp16 <- readOGR(dsn="LULC2016.shp",layer = "LULC2016" )
+shp95 <- readOGR(dsn="LUPP1995.shp",layer = "LUPP1995" )
+shp10 <- readOGR(dsn="lc_2010.shp" ,layer = "lc_2010" )
+shp16 <- readOGR(dsn="LULC2016.shp",layer = "LULC2016" )
 
-shp95 <- readOGR(dsn="lc_1995_sel.shp",layer = "lc_1995_sel" )
-shp10 <- readOGR(dsn="lc_2010_sel.shp",layer = "lc_2010_sel" )
-shp16 <- readOGR(dsn="lc_2016_sel.shp",layer = "lc_2016_sel" )
+# shp95 <- readOGR(dsn="lc_1995_sel.shp",layer = "lc_1995_sel" )
+# shp10 <- readOGR(dsn="lc_2010_sel.shp",layer = "lc_2010_sel" )
+# shp16 <- readOGR(dsn="lc_2016_sel.shp",layer = "lc_2016_sel" )
 
 bckup95 <- shp95
 bckup10 <- shp10

@@ -19,4 +19,5 @@
   #system("wget -O tmp.zip \"https://drive.google.com/uc?export=download&id=0B4Jq8yMRjKLjNEllLUNoV0o2bjg\"")
   system("wget https://www.dropbox.com/s/vzzp94sftspzrad/gis_data_bhutan_h.zip?dl=0")
   system("unzip gis_data_bhutan_h.zip?dl=0" )
+  system("rm *.zip")
   

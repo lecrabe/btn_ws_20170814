@@ -24,7 +24,7 @@ library(foreign)
 library(dplyr)
 
 ############### SET WORKING ENVIRONMENT
-rootdir <- "~/btn_ws_20170814/gis_data_bhutan_h/lulc_change/"
-#rootdir <- "/media/dannunzio/OSDisk/Users/dannunzio/Documents/countries/bhutan/gis_data_bhutan/lulc_change/"
+#rootdir <- "~/btn_ws_20170814/gis_data_bhutan_h/lulc_change/"
+rootdir <- "/media/dannunzio/OSDisk/Users/dannunzio/Documents/countries/bhutan/gis_data_bhutan/lulc_change/"
 
 setwd(rootdir)

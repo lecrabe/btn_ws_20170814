@@ -15,9 +15,7 @@
 
 ############### DOWNLOAD WORKSHOP DATA
   setwd("~/btn_ws_20170814/")
-  #system("wget -O tmp.zip \"https://drive.google.com/uc?export=download&id=0B4Jq8yMRjKLjek11OVFSWlBTUFU\"")
-  #system("wget -O tmp.zip \"https://drive.google.com/uc?export=download&id=0B4Jq8yMRjKLjNEllLUNoV0o2bjg\"")
-  system("wget https://www.dropbox.com/s/vzzp94sftspzrad/gis_data_bhutan_h.zip?dl=0")
+  system("wget https://www.dropbox.com/s/9ejw0dx6yoj5bfl/gis_data_bhutan.zip?dl=0")
   system("unzip gis_data_bhutan_h.zip?dl=0" )
   system("rm *.zip")
   

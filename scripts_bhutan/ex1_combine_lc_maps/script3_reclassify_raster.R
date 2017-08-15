@@ -89,8 +89,10 @@ table(df$gain)
 #################### Reclassify with the following final legend
 # 0  -> no data
 # 1  -> other land
+# 2  -> stable water (BLUE)
 # 3  -> non forest
 # 4  -> forest
+# 5  -> agriculture (YELLOW)
 # 11 -> old loss
 # 12 -> recent loss
 # 21 -> old gain
@@ -109,6 +111,9 @@ df[df$gain == 2 & df$size == "big",]$newcode <- 22
 df[df$class95 == "Forest" & df$class10 == "Forest" & df$class16 == "Forest",]$newcode <- 4
 
 df[df$class95 != "Forest" & df$class10 != "Forest" & df$class16 != "Forest",]$newcode <- 3
+
+df[df$class95 == "Water" & df$class10 == "Water" & df$class16 == "Water",]$newcode <- 2
+df[df$class95 == "Agriculture" & df$class10 == "Agriculture" & df$class16 == "Agriculture",]$newcode <- 5
 
 tapply(df$area,df$newcode,sum)
 
@@ -138,9 +143,9 @@ system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
 ))
 
 ####################  CREATE A PSEUDO COLOR TABLE
-cols <- col2rgb(c("black","lightgrey","grey","darkgreen","red","orange","lightblue","blue"))
+cols <- col2rgb(c("black","lightgrey","blue","grey","darkgreen","yellow","red","orange","lightblue","blue"))
 
-pct <- data.frame(cbind(c(0,1,3,4,11,12,21,22),
+pct <- data.frame(cbind(c(0,1,2,3,4,5,11,12,21,22),
                         cols[1,],
                         cols[2,],
                         cols[3,]
@@ -162,6 +167,7 @@ system(sprintf("gdal_translate -co COMPRESS=LZW %s %s",
                "tmp_pct_sieve_final_change_951016.tif",
                "final_change_951016_simple_legend.tif"))
 
+plot(raster("final_change_951016_simple_legend.tif"))
 #################### DELETE TEMP FILES
 system(sprintf(paste0("rm tmp*.tif")))
 

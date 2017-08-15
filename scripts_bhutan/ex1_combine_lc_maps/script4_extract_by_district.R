@@ -17,7 +17,7 @@ plot(dis)
 plot(dddis,add=T)
 
 ####### Compute zonal stats for LOSSES
-system(sprintf("oft-zonal_large_list.py -i %s -o %s -um %s",
+system(sprintf("python ../../scripts_bhutan/oft-zonal_large_list.py -i %s -o %s -um %s",
                "final_change_951016_simple_legend.tif",
                "stats_by_district.txt",
                "../boundaries_bhutan/Dzongkhag.shp"

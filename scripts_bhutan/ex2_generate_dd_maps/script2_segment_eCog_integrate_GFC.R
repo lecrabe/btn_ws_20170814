@@ -12,7 +12,7 @@ library(ggplot2)
 
 options(stringsAsFactors = F)
 
-rootdir <- "/media/dannunzio/OSDisk/Users/dannunzio/Documents/countries/bhutan/gis_data_bhutan/"
+rootdir <- "~/btn_ws_20170814/gis_data_bhutan/"
 
 gfcdir  <- paste0(rootdir,"gfc_2015/")
 segdir  <- paste0(rootdir,"segments_FREL/")

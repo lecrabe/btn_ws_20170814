@@ -25,9 +25,36 @@ start_time <- Sys.time()
 shapename <- paste0(segdir,"ScalePara2_shape0.1_compact0.2.shp")
 base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 
+####### Compute above 10% threshold for TC
+system(sprintf("gdal_calc.py -A %s --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
+               paste0(gfc_folder,"gfc_tc2000_bhutan.tif"),
+               paste0(gfc_folder,"gfc_tc2000_gt10_bhutan.tif"),
+               "(A>10)*A"
+))
+
+####### Compute above 10% threshold for LOSSYEAR
+system(sprintf("gdal_calc.py -A %s -B %s --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
+               paste0(gfc_folder,"gfc_lossyear_bhutan.tif"),
+               paste0(gfc_folder,"gfc_tc2000_gt10_bhutan.tif"),
+               paste0(gfc_folder,"gfc_lossyear_gt10_bhutan.tif"),
+               "(B>10)*A"
+))             
+
+####### Reproject in DRUK (EPSG:5266)
+list <- list.files(paste0(gfc_folder),pattern = glob2rx("gfc*.tif"))
+list <- c("gfc_gain_bhutan.tif","gfc_lossyear_gt10_bhutan.tif","gfc_tc2000_gt10_bhutan.tif")
+
+for(layer in list ){
+  print(layer)
+  system(sprintf("gdalwarp -t_srs EPSG:5266 -co COMPRESS=LZW %s %s",
+                 paste0(gfc_folder,layer),
+                 paste0(gfc_folder,"druk_",layer)
+  ))
+}
+
 ####### Rasterize segments
-e <- extent(raster(paste0(gfcdir,"DD_gfc_2014_druk.tif")))
-r <- res(raster(paste0(gfcdir,"DD_gfc_2014_druk.tif")))
+e <- extent(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
+r <- res(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
 
 system(sprintf("gdal_rasterize -a %s -l %s -ot UInt32 -te %s %s %s %s -tr %s %s -co \"COMPRESS=LZW\" %s %s",
                "ID" ,

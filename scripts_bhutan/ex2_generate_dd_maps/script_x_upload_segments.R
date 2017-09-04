@@ -24,3 +24,11 @@ setwd(segdir)
 system("wget https://www.dropbox.com/s/ae6b5cxcbejb85b/segments_FREL.zip?dl=0")
 system("unzip segments_FREL.zip?dl=0")
 
+#segs       <- readOGR(shapename,base)
+dbf <- read.dbf(paste0(segdir,base,".dbf"))
+dbf$ID    <- row(dbf)[,1]
+
+write.dbf(dbf,paste0(segdir,base,".dbf"))
+
+summary(dbf)
+hist(dbf$areas)

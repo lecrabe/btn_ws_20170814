@@ -25,15 +25,6 @@ start_time <- Sys.time()
 shapename <- paste0(segdir,"ScalePara2_shape0.1_compact0.2.shp")
 base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 
-#segs       <- readOGR(shapename,base)
-dbf <- read.dbf(paste0(segdir,base,".dbf"))
-dbf$ID    <- row(dbf)[,1]
-
-write.dbf(dbf,paste0(segdir,base,".dbf"))
-
-summary(segs)
-hist(segs$areas)
-
 ####### Rasterize segments
 e <- extent(raster(paste0(gfcdir,"DD_gfc_2014_druk.tif")))
 r <- res(raster(paste0(gfcdir,"DD_gfc_2014_druk.tif")))

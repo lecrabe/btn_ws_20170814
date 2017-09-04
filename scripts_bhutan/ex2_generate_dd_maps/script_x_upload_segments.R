@@ -12,6 +12,7 @@ library(ggplot2)
 
 options(stringsAsFactors = F)
 
+###### Set directories
 rootdir <- "~/btn_ws_20170814/gis_data_bhutan/"
 setwd(rootdir)
 rootdir <- paste0(getwd(),"/")
@@ -24,6 +25,7 @@ setwd(segdir)
 system("wget https://www.dropbox.com/s/ae6b5cxcbejb85b/segments_FREL.zip?dl=0")
 system("unzip segments_FREL.zip?dl=0")
 
+###### Create unique POLYGON ID
 #segs       <- readOGR(shapename,base)
 dbf <- read.dbf(paste0(segdir,base,".dbf"))
 dbf$ID    <- row(dbf)[,1]
@@ -32,3 +34,8 @@ write.dbf(dbf,paste0(segdir,base,".dbf"))
 
 summary(dbf)
 hist(dbf$areas)
+
+###### Create unique ID for boundaries
+dbf <- read.dbf(paste0("boundaries_bhutan/bhutan.dbf"))
+dbf$id <- row(dbf)[,1]
+write.dbf(dbf,paste0("boundaries_bhutan/bhutan.dbf"))

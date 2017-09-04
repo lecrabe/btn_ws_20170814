@@ -71,68 +71,51 @@ system(sprintf("gdal_rasterize -a %s -l %s -ot UInt32 -te %s %s %s %s -tr %s %s 
 
 
 ###### Create datamask
-e <- extent(raster(paste0(gfcdir,"gfc_lossyear_bhutan.tif")))
-r <- res(raster(paste0(gfcdir,"gfc_lossyear_bhutan.tif")))
-
-system(sprintf("gdal_rasterize -a %s -l %s -ot UInt32 -te %s %s %s %s -tr %s %s -co \"COMPRESS=LZW\" %s %s",
+system(sprintf("gdal_rasterize -a %s -l %s -te %s %s %s %s -tr %s %s -co \"COMPRESS=LZW\" %s %s",
                "id" ,
-               "aoi_geo",
+               "bhutan",
                e@xmin,
                e@ymin,
                e@xmax,
                e@ymax,
                r[1],
                r[1],
-               paste0("boundaries_gaul/aoi_geo.shp"),
+               paste0("boundaries_bhutan/bhutan.shp"),
                paste0(gfcdir,"data_mask.tif")
 ))
 
 
-####### Clip segments 2014
-e <- extent(raster(paste0(gfcdir,"data_mask.tif")))
-r <- res(raster(paste0(gfcdir,"data_mask.tif")))
-p <- projection(raster(paste0(gfcdir,"data_mask.tif")))
-
-system(sprintf("gdalwarp -t_srs %s -te %s %s %s %s -tr %s %s -co \"COMPRESS=LZW\" -overwrite %s %s",
-               "EPSG:4326",
-               e@xmin,
-               e@ymin,
-               e@xmax,
-               e@ymax,
-               r[1],
-               r[1],
-               paste0(segdir,"segments.tif"),
-               paste0(segdir,"segments_geo.tif")
-               ))
-
 #################### Mask out no data polygons
 system(sprintf("gdal_calc.py -A %s -B %s --type=UInt32 --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
-               paste0(segdir,"segments_geo.tif"),
+               paste0(segdir,"segments.tif"),
                paste0(gfcdir,"data_mask.tif"),
-               paste0(segdir,"mask_segments_geo.tif"),
+               paste0(segdir,"mask_segments.tif"),
                "A*(B>0)"
 ))
 
 
 ####### Compute zonal stats for LOSSES
-system(sprintf("oft-zonal_large_list.py -i %s -o %s -um %s",
-               paste0(gfcdir,"gfc_lossyear_gt10_bhutan.tif"),
+system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
+               paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif"),
                paste0(gfcdir,"tmp_zonal_loss.txt"),
-               paste0(segdir,"mask_segments_geo.tif")
+               paste0(segdir,"mask_segments.tif"),
+               14
 ))
 
 ####### Compute zonal stats for GAINS
-system(sprintf("oft-zonal_large_list.py -i %s -o %s -um %s",
-               paste0(gfcdir,"gfc_gain_bhutan.tif"),
+system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
+               paste0(gfcdir,"druk_gfc_gain_bhutan.tif"),
                paste0(gfcdir,"tmp_zonal_gain.txt"),
-               paste0(segdir,"mask_segments_geo.tif")
-))
+               paste0(segdir,"mask_segments.tif"),
+               1
+               ))
 
 ####### Compute zonal stats for TREECOVER
-system(sprintf("oft-zonal_large_list.py oft-his -i %s -o %s -um %s",
-               paste0(gfcdir,"gfc_tc2000_gt10_bhutan.tif"),
+system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
+               paste0(gfcdir,"druk_gfc_tc2000_gt10_bhutan.tif"),
                paste0(gfcdir,"tmp_zonal_tc2000.txt"),
-               paste0(segdir,"mask_segments_geo.tif")
+               paste0(segdir,"mask_segments.tif"),
+               100
 ))
 
 
@@ -204,8 +187,8 @@ write.table(df[,c("clump_id","total","new_class")],
 system(sprintf("(echo %s; echo 1; echo 1; echo 3; echo 0) | oft-reclass  -oi %s  -um %s %s",
                paste0(gfcdir,"reclass.txt"),
                paste0(gfcdir,"tmp_reclass_segments.tif"),
-               paste0(segdir,"mask_segments_geo.tif"),
-               paste0(segdir,"mask_segments_geo.tif")
+               paste0(segdir,"mask_segments.tif"),
+               paste0(segdir,"mask_segments.tif")
 ))
 
 ####################  CREATE A PSEUDO COLOR TABLE
@@ -226,29 +209,17 @@ system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
                paste0(gfcdir,"tmp_byte_reclass_segments.tif")
 ))
 
-#################### Crop the DD to country boundaries
-system(sprintf("oft-cutline_crop.py -v %s -i %s -o %s",
-               "boundaries_bhutan/bhutan_geo.shp",
-               paste0(gfcdir,"tmp_byte_reclass_segments.tif"),
-               paste0(gfcdir,"tmp_crop_byte_reclass_segments.tif")
-))
-
 ################################################################################
 ## Add pseudo color table to result
 system(sprintf("(echo %s) | oft-addpct.py %s %s",
                paste0(gfcdir,"/color_table.txt"),
-               paste0(gfcdir,"tmp_crop_byte_reclass_segments.tif"),
-               paste0(gfcdir,"tmp_pct_crop_byte_reclass_segments.tif")
+               paste0(gfcdir,"tmp_byte_reclass_segments.tif"),
+               paste0(gfcdir,"tmp_pct_byte_reclass_segments.tif")
 ))
 
 #################### Compress
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
-               paste0(gfcdir,"tmp_pct_crop_byte_reclass_segments.tif"),
-               paste0(gfcdir,"DD_geo_20170904.tif")
-))
-
-system(sprintf("gdalwarp -t_srs EPSG:5266 -overwrite -co COMPRESS=LZW %s %s",
-               paste0(gfcdir,"DD_geo_20170904.tif"),
+               paste0(gfcdir,"tmp_pct_byte_reclass_segments.tif"),
                paste0(gfcdir,"DD_druk_20170904.tif")
 ))
 

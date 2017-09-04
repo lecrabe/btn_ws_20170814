@@ -25,14 +25,14 @@ list <- list.files(lsatdir,glob2rx("*lsat_2014*.tif"))
 for(file in list){
   system(sprintf("(echo 0; echo 0 ; echo 0)|oft-seg -region -ttest -automax %s %s",
                paste0(lsatdir,file),
-               paste0(gfcdir,"/seg_",file)
+               paste0(gfcdir,"tmp_seg_",file)
                ))
 }
 
 ####### Merge segments 2014
 system(sprintf("gdal_merge.py -o %s -v -co COMPRESS=LZW %s",
                paste0(gfcdir,"tmp_segments_2014.tif"),
-               paste0(gfcdir,"seg_*.tif")))
+               paste0(gfcdir,"tmp_seg_*.tif")))
 
 ####### Clump segments 2014
 system(sprintf("oft-clump -i %s -o %s -um %s",
@@ -59,28 +59,34 @@ system(sprintf("oft-clip.pl %s %s %s",
 system(sprintf("gdal_calc.py -A %s -B %s --type=UInt32 --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
                paste0(gfcdir,"tmp_clip_clump_2014.tif"),
                paste0(gfcdir,"data_mask.tif"),
-               paste0(gfcdir,"clump_2014.tif"),
+               paste0(gfcdir,"tmp_mask_clump_2014.tif"),
                "A*(B>0)"
+))
+
+####### Reproject the clumps
+system(sprintf("gdalwarp -t_srs EPSG:5266 -co COMPRESS=LZW %s %s",
+               paste0(gfcdir,"tmp_mask_clump_2014.tif"),
+               paste0(gfcdir,"druk_clump_2014.tif")
 ))
 
 ####### Compute zonal stats for LOSSES
 system(sprintf("oft-zonal_large_list.py -i %s -o %s -um %s",
-               paste0(gfcdir,"gfc_lossyear_bhutan.tif"),
-               paste0(gfcdir,"zonal_loss.txt"),
-               paste0(gfcdir,"clump_2014.tif")
+               paste0(gfcdir,"crop_drukgfc_lossyear_gt10_bhutan.tif"),
+               paste0(gfcdir,"tmp_zonal_loss.txt"),
+               paste0(gfcdir,"druk_clump_2014.tif")
 ))
 
 ####### Compute zonal stats for treecover
-system(sprintf("oft-zonal_large_list.py -i %s -o %s -um %s",
-               paste0(gfcdir,"gfc_tc2000_bhutan.tif"),
-               paste0(gfcdir,"zonal_tc2000.txt"),
-               paste0(gfcdir,"clump_2014.tif")
+system(sprintf("oft-zonal_large_list.py oft-his -i %s -o %s -um %s",
+               paste0(gfcdir,"crop_drukgfc_tc2000_gt10_bhutan.tif"),
+               paste0(gfcdir,"tmp_zonal_tc2000.txt"),
+               paste0(gfcdir,"druk_clump_2014.tif")
 ))
 
 
 ####### Read zonal stats and rename columns
-df_lossyr <- read.table(paste0(gfcdir,"zonal_loss.txt"))
-df_tc2000 <- read.table(paste0(gfcdir,"zonal_tc2000.txt"))
+df_lossyr <- read.table(paste0(gfcdir,"tmp_zonal_loss.txt"))
+df_tc2000 <- read.table(paste0(gfcdir,"tmp_zonal_tc2000.txt"))
 
 names(df_lossyr)  <- c("clump_id","total","nodata",paste0("ly_",1:14))
 names(df_tc2000)  <- c("clump_id","total","nodata",paste0("tc_",1:100))
@@ -88,22 +94,18 @@ names(df_tc2000)  <- c("clump_id","total","nodata",paste0("tc_",1:100))
 head(df_lossyr)
 head(df_tc2000)
 
-df_tc2000$tc_gt_10 <- rowSums(df_tc2000[,14:103])
-df_tc2000$tc_lt_10 <- rowSums(df_tc2000[,4:13])
-
-summary(df_tc2000$total - df_tc2000$nodata - df_tc2000$tc_gt_10 - df_tc2000$tc_lt_10)
-
-df <- cbind(df_lossyr,df_tc2000[,104:105])
+####### Bind loss and Tree cover in the same data frame
+df <- cbind(df_lossyr,df_tc2000[,4:103])
 
 df$loss <- rowSums(df[,paste0("ly_",1:14)])
 df$tc_2014 <- df$tc_gt_10 - df$loss
 
 df$new_class <- 0
 
-df[df$tc_gt_10 <= 0.1 * (df$total - df$nodata),]$new_class <- 3
-df[df$loss == 0 & df$tc_2014 > 0.1 * (df$total - df$nodata),]$new_class <- 4
-df[df$tc_gt_10 > 0.1 * (df$total - df$nodata) & df$tc_2014 <= 0.1 * (df$total - df$nodata),]$new_class <- 11
-df[df$loss > 0 & df$tc_2014 > 0.1 * (df$total - df$nodata),]$new_class  <- 12
+df[df$tc_gt_10 <= 0.1 * (df$total),]$new_class <- 3
+df[df$loss == 0 & df$tc_2014 > 0.1 * (df$total),]$new_class <- 4
+df[df$tc_gt_10 > 0.1 * (df$total) & df$tc_2014 <= 0.1 * (df$total),]$new_class <- 11
+df[df$loss > 0 & df$tc_2014 > 0.1 * (df$total),]$new_class  <- 12
 
 table(df$new_class)
 write.table(df[,c("clump_id","total","new_class")],
@@ -157,3 +159,7 @@ system(sprintf("rm %s",
 
 ####### Time
 Sys.time()-start_time
+
+
+
+df[df$clump_id == 790740,]

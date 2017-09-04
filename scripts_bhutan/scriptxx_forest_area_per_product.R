@@ -190,3 +190,53 @@ pix <- res(raster("Bhutan_Drivers_Study/RASTER/2015_lulc_cc.tif"))[1]
 df[,3:ncol(df)] <- df[,3:ncol(df)]*pix*pix/10000 
 
 write.csv(df,"stats_unique.csv",row.names = F)
+
+
+####################################################################################################    
+#####################################    GLC dataset
+####################################################################################################
+setwd(glc_folder)
+
+#################### Crop the DD to country boundaries
+system(sprintf("oft-cutline_crop.py -v %s -i %s -o %s",
+               "../boundaries_bhutan/bhutan.shp",
+               "glc_bhutan_druk_2000lc030.tif",
+               "crop_glc_bhutan_druk_2000lc030.tif"
+))
+
+system(sprintf("oft-stat -i %s -o %s -um %s -nostd",
+               "crop_glc_bhutan_druk_2000lc030.tif",
+               "stats_2000lc030.txt",
+               "crop_glc_bhutan_druk_2000lc030.tif"
+))
+
+#################### Crop the DD to country boundaries
+system(sprintf("oft-cutline_crop.py -v %s -i %s -o %s",
+               "../boundaries_bhutan/bhutan.shp",
+               "glc_bhutan_druk_2010lc030.tif",
+               "crop_glc_bhutan_druk_2010lc030.tif"
+))
+
+system(sprintf("oft-stat -i %s -o %s -um %s -nostd",
+               "crop_glc_bhutan_druk_2010lc030.tif",
+               "stats_2010lc030.txt",
+               "crop_glc_bhutan_druk_2010lc030.tif"
+))
+
+
+df00 <- read.table("stats_2000lc030.txt")[,1:2]
+df10 <- read.table("stats_2010lc030.txt")[,1:2]
+
+code <- read.csv("legend_glc.csv")
+
+df <- merge(code,df00,by.x="code",by.y="V1",all.x=T)
+df <- merge(df,df10,by.x="code",by.y="V1",all.x=T)
+
+names(df) <- c("code","descr","area2000","area2010")
+
+df[is.na(df)] <- 0
+
+pix <- res(raster("glc_bhutan_druk_2000lc030.tif"))[1]
+df[,3:ncol(df)] <- df[,3:ncol(df)]*pix*pix/10000 
+
+write.csv(df,"stats_glc.csv",row.names = F)

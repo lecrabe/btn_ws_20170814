@@ -27,28 +27,28 @@ base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 
 ####### Compute above 10% threshold for TC
 system(sprintf("gdal_calc.py -A %s --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
-               paste0(gfc_folder,"gfc_tc2000_bhutan.tif"),
-               paste0(gfc_folder,"gfc_tc2000_gt10_bhutan.tif"),
+               paste0(gfcdir,"gfc_tc2000_bhutan.tif"),
+               paste0(gfcdir,"gfc_tc2000_gt10_bhutan.tif"),
                "(A>10)*A"
 ))
 
 ####### Compute above 10% threshold for LOSSYEAR
 system(sprintf("gdal_calc.py -A %s -B %s --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
-               paste0(gfc_folder,"gfc_lossyear_bhutan.tif"),
-               paste0(gfc_folder,"gfc_tc2000_gt10_bhutan.tif"),
-               paste0(gfc_folder,"gfc_lossyear_gt10_bhutan.tif"),
+               paste0(gfcdir,"gfc_lossyear_bhutan.tif"),
+               paste0(gfcdir,"gfc_tc2000_gt10_bhutan.tif"),
+               paste0(gfcdir,"gfc_lossyear_gt10_bhutan.tif"),
                "(B>10)*A"
 ))             
 
 ####### Reproject in DRUK (EPSG:5266)
-list <- list.files(paste0(gfc_folder),pattern = glob2rx("gfc*.tif"))
+list <- list.files(paste0(gfcdir),pattern = glob2rx("gfc*.tif"))
 list <- c("gfc_gain_bhutan.tif","gfc_lossyear_gt10_bhutan.tif","gfc_tc2000_gt10_bhutan.tif")
 
 for(layer in list ){
   print(layer)
   system(sprintf("gdalwarp -t_srs EPSG:5266 -co COMPRESS=LZW %s %s",
-                 paste0(gfc_folder,layer),
-                 paste0(gfc_folder,"druk_",layer)
+                 paste0(gfcdir,layer),
+                 paste0(gfcdir,"druk_",layer)
   ))
 }
 

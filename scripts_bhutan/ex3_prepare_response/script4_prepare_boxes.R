@@ -18,10 +18,10 @@ library(dplyr)
 #######################################################################
 ##############################     SETUP YOUR DATA 
 #######################################################################
-setwd("../../aa_change_951016/")
+setwd("/media/dannunzio/OSDisk/Users/dannunzio/Documents/countries/bhutan/gis_data_bhutan/lulc_change/sae_design_final_change_951016_simple_legend/")
 
 ## Read the datafile and setup the correct names for the variables
-pts <- read.csv("step1_sampling/pts_bhutan_CE_2017-08-09.csv")
+pts <- read.csv("pts_bhutan_aa_nm_2017-08-16.csv")
 dir.create("gee_kml_files")
 
 names(pts)

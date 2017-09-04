@@ -33,7 +33,7 @@ setwd(rootdir)
 #################### SET PARAMETERS
 
 ## Setup the number of snippets to generate
-how_many <- 1000
+how_many <- 350
 
 #### Name of the directory where your Landsat data is
 lsat_dir <- paste0(rootdir,"time_series_image_dir/landsat/")
@@ -58,10 +58,10 @@ yr_str_stnl <- 2016
 yr_end_stnl <- 2017
 
 ## setup the visualisation parameters for the interpretation box size. in meters
-interpretation_box_size <- 35
+interpretation_box_size <- 15
 
 ## setup the visualisation parameters for the level of zoom. in meters
-outside_box_size        <- 1000
+outside_box_size        <- 750
 
 ## position in landsat archive name of the "bounding box". Example: "median_hul_clip_lsat_1995_" == 27
 bb_pos_lsat <- 27
@@ -70,7 +70,7 @@ bb_pos_lsat <- 27
 bb_pos_stnl <- 25
 
 ## Read the datafile 
-pts <- read.csv("/media/dannunzio/OSDisk/Users/dannunzio/Documents/countries/bhutan/aa_change_951016/step1_sampling/pts_bhutan_CE_2017-08-09.csv")  #####  CHANGE TO MY VALUE HERE
+pts <- read.csv("/home/dannunzio/sae_design_final_change_951016_simple_legend/pts_test_bhutan_CE_2017-08-16.csv")  #####  CHANGE TO MY VALUE HERE
 head(pts)
 names(pts)
 

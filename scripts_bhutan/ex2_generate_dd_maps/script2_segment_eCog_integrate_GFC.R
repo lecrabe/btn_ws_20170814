@@ -164,26 +164,46 @@ summary(df$tc2014-df$tc2000+rowSums(df[,paste0("ly_",1:14)])-df$gain)
 
 # Gain (TC 14 > TC 00) 5
 
-df$new_class <- 2
+################## Change between 2004 and 2009
+df$chge_0409 <- 2
 
-df[df$tc2000 >  0.1*df$total & df$tc2014 > 0.1*df$total,]$new_class   <- 11
-df[df$tc2000 >  0.4*df$total & df$tc2014 > 0.4*df$total,]$new_class   <- 12
-df[df$tc2000 >  0.7*df$total & df$tc2014 > 0.7*df$total,]$new_class   <- 13
+df[df$tc2004 >  0.1*df$total & df$tc2009 > 0.1*df$total,]$chge_0409   <- 11
+df[df$tc2004 >  0.4*df$total & df$tc2009 > 0.4*df$total,]$chge_0409   <- 12
+df[df$tc2004 >  0.7*df$total & df$tc2009 > 0.7*df$total,]$chge_0409   <- 13
 
-df[df$tc2014 <= 0.1*df$total & df$tc2000 <= 0.1*df$total,]$new_class  <- 2
-df[df$tc2000 >  0.1*df$total & df$tc2014 <= 0.1*df$total ,]$new_class <- 3
+df[df$tc2009 <= 0.1*df$total & df$tc2004 <= 0.1*df$total,]$chge_0409  <- 2
+df[df$tc2004 >  0.1*df$total & df$tc2009 <= 0.1*df$total ,]$chge_0409 <- 3
 
-df[df$tc2000 >  0.4*df$total & df$tc2014 <= 0.4*df$total & df$tc2014 > 0.1*df$total,]$new_class <- 41
-df[df$tc2000 >  0.7*df$total & df$tc2014 <= 0.7*df$total & df$tc2014 > 0.4*df$total,]$new_class <- 42
-df[df$tc2000 >  0.7*df$total & df$tc2014 <= 0.4*df$total & df$tc2014 > 0.1*df$total,]$new_class <- 43
+df[df$tc2004 >  0.4*df$total & df$tc2009 <= 0.4*df$total & df$tc2009 > 0.1*df$total,]$chge_0409 <- 41
+df[df$tc2004 >  0.7*df$total & df$tc2009 <= 0.7*df$total & df$tc2009 > 0.4*df$total,]$chge_0409 <- 42
+df[df$tc2004 >  0.7*df$total & df$tc2009 <= 0.4*df$total & df$tc2009 > 0.1*df$total,]$chge_0409 <- 43
 
-df[df$tc2014 > 1.1*df$tc2000 & df$tc2014 > 0.1*df$total,]$new_class    <- 5
+df[(df$tc2009 - df$tc2004) > 5 & df$tc2009 > 0.1*df$total,]$chge_0409    <- 5
 
-table(df$new_class)
-write.table(df[,c("clump_id","total","new_class")],
+################## Change between 2009 and 2014
+df$chge_0914 <- 2
+
+df[df$tc2009 >  0.1*df$total & df$tc2014 > 0.1*df$total,]$chge_0914   <- 11
+df[df$tc2009 >  0.4*df$total & df$tc2014 > 0.4*df$total,]$chge_0914   <- 12
+df[df$tc2009 >  0.7*df$total & df$tc2014 > 0.7*df$total,]$chge_0914   <- 13
+
+df[df$tc2014 <= 0.1*df$total & df$tc2009 <= 0.1*df$total,]$chge_0914  <- 2
+df[df$tc2009 >  0.1*df$total & df$tc2014 <= 0.1*df$total ,]$chge_0914 <- 3
+
+df[df$tc2009 >  0.4*df$total & df$tc2014 <= 0.4*df$total & df$tc2014 > 0.1*df$total,]$chge_0914 <- 41
+df[df$tc2009 >  0.7*df$total & df$tc2014 <= 0.7*df$total & df$tc2014 > 0.4*df$total,]$chge_0914 <- 42
+df[df$tc2009 >  0.7*df$total & df$tc2014 <= 0.4*df$total & df$tc2014 > 0.1*df$total,]$chge_0914 <- 43
+
+df[(df$tc2014 - df$tc2009) > 5 & df$tc2014 > 0.1*df$total & df$chge_0409 != 5 ,]$chge_0914    <- 5
+
+table(df$chge_0914)
+table(df$chge_0409)
+
+table(df$total)
+write.table(df[,c("clump_id","total","chge_0409","chge_0914")],
             paste0(gfcdir,"reclass.txt"),row.names = F,col.names = F)
 
-####### Reclassify
+####### Reclassify for 2004-2009
 system(sprintf("(echo %s; echo 1; echo 1; echo 3; echo 0) | oft-reclass  -oi %s  -um %s %s",
                paste0(gfcdir,"reclass.txt"),
                paste0(gfcdir,"tmp_reclass_segments.tif"),
@@ -220,17 +240,59 @@ system(sprintf("(echo %s) | oft-addpct.py %s %s",
 #################### Compress
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
                paste0(gfcdir,"tmp_pct_byte_reclass_segments.tif"),
-               paste0(gfcdir,"DD_druk_20170904.tif")
+               paste0(gfcdir,"DD_2004_2009_druk_20170907.tif")
 ))
+
+
+####### Reclassify for 2009-2014
+system(sprintf("(echo %s; echo 1; echo 1; echo 4; echo 0) | oft-reclass  -oi %s  -um %s %s",
+               paste0(gfcdir,"reclass.txt"),
+               paste0(gfcdir,"tmp_reclass_segments.tif"),
+               paste0(segdir,"mask_segments.tif"),
+               paste0(segdir,"mask_segments.tif")
+))
+
+####################  CREATE A PSEUDO COLOR TABLE
+cols <- col2rgb(c("black","lightgrey","red","blue","lightgreen","green","darkgreen","orange","orange1","yellow"))
+
+pct <- data.frame(cbind(c(0,2,3,5,11,12,13,41,42,43),
+                        cols[1,],
+                        cols[2,],
+                        cols[3,]
+)
+)
+
+write.table(pct,paste0(gfcdir,"/color_table.txt"),row.names = F,col.names = F,quote = F)
+
+#################### CONVERT TO BYTE
+system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
+               paste0(gfcdir,"tmp_reclass_segments.tif"),
+               paste0(gfcdir,"tmp_byte_reclass_segments.tif")
+))
+
+################################################################################
+## Add pseudo color table to result
+system(sprintf("(echo %s) | oft-addpct.py %s %s",
+               paste0(gfcdir,"/color_table.txt"),
+               paste0(gfcdir,"tmp_byte_reclass_segments.tif"),
+               paste0(gfcdir,"tmp_pct_byte_reclass_segments.tif")
+))
+
+#################### Compress
+system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
+               paste0(gfcdir,"tmp_pct_byte_reclass_segments.tif"),
+               paste0(gfcdir,"DD_2009_2014_druk_20170907.tif")
+))
+
 
 
 system(sprintf("oft-stat -i %s -o %s -um %s -nostd",
-               paste0(gfcdir,"DD_druk_20170904.tif"),
-               paste0(gfcdir,"stat_DD_druk_20170904.txt"),
-               paste0(gfcdir,"DD_druk_20170904.tif")
+               paste0(gfcdir,"DD_2009_2014_druk_20170907.tif"),
+               paste0(gfcdir,"stat_2009_2014_DD_druk_20170907.txt"),
+               paste0(gfcdir,"DD_2009_2014_druk_20170907.tif")
 ))
 
-df <- read.table(paste0(gfcdir,"stat_DD_druk_20170904.txt"))
+stats_pixel <- read.table(paste0(gfcdir,"stat_2009_2014_DD_druk_20170907.txt"))
 
 ####### Clean
 system(sprintf("rm %s",

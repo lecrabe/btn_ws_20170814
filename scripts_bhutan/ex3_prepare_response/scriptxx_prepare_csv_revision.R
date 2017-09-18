@@ -75,11 +75,13 @@ pts_origin  <- read.csv("CEP/CE_2017-09-11_2004_2009.csv")
 table(pts_results$map_class,pts_results$ref_class)
 table(pts_results$map_class_label,pts_results$ref_class_label)
 
+################### Example of check 1
 check_phtunsho <- pts_results[pts_results$ref_class == 2 & 
                                 pts_results$operator == "Phuntsho" & 
                                 pts_results$map_class == 3,]
 check_phtunsho$id
 
+################### Example of check template
 out <- pts_origin[
   pts_origin$id %in% pts_results[
     (pts_results$ref_class == 2 & pts_results$map_class == 1)
@@ -90,6 +92,6 @@ out <- pts_origin[
   ]
 
 ## Export as csv file
-write.csv(out,paste("check_20170519.csv",sep=""),row.names=F)
+write.csv(out,paste("check_20170918.csv",sep=""),row.names=F)
 
 ## HELLO!!!

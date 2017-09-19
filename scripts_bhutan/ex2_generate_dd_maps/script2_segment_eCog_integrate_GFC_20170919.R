@@ -131,6 +131,8 @@ names(df_gain)    <- c("clump_id","total","nodata","gain")
 head(df_lossyr)
 head(df_tc2000)
 
+
+quantile(df$total)
 ####### Bind loss and Tree cover in the same data frame
 df <- cbind(df_lossyr,df_tc2000[,4:103],df_gain[,"gain"])
 names(df)[ncol(df)] <- "gain"
@@ -172,11 +174,12 @@ df[df$tc2004 >  0.4*df$total & df$tc2009 > 0.4*df$total,]$chge_0409   <- 12
 df[df$tc2004 >  0.7*df$total & df$tc2009 > 0.7*df$total,]$chge_0409   <- 13
 
 df[df$tc2009 <= 0.1*df$total & df$tc2004 <= 0.1*df$total,]$chge_0409  <- 2
-df[df$tc2004 >  0.1*df$total & df$tc2009 <= 0.1*df$total & (df$tc2004 - df$tc2009) > 0.1*df$total,]$chge_0409 <- 3
 
 df[df$tc2004 >  0.4*df$total & df$tc2009 <= 0.4*df$total & df$tc2009 > 0.1*df$total,]$chge_0409 <- 41
 df[df$tc2004 >  0.7*df$total & df$tc2009 <= 0.4*df$total & df$tc2009 > 0.1*df$total,]$chge_0409 <- 43
 df[df$tc2004 >  0.7*df$total & df$tc2009 <= 0.7*df$total & df$tc2009 > 0.4*df$total,]$chge_0409 <- 42
+
+df[df$tc2004 >  0.1*df$total & df$tc2009 <= 0.1*df$total & (df$tc2004 - df$tc2009) > 0.1*df$total,]$chge_0409 <- 3
 
 df[(df$tc2009 - df$tc2004) > 5 & df$tc2009 > 0.1*df$total,]$chge_0409    <- 5
 

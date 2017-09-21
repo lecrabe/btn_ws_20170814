@@ -20,6 +20,9 @@ gfcdir  <- paste0(rootdir,"gfc_2015/")
 segdir  <- paste0(rootdir,"segments_FREL/Scal1_0.1_Shape0_Compact1/")
 
 start_time <- Sys.time()
+####### Read shapefile of segmentation from eCognition
+shapename <- paste0(segdir,"ScalePara.1_shape0_compact1.shp")
+base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 
 ####################  CREATE A PSEUDO COLOR TABLE
 cols <- col2rgb(c("black","lightgrey","red","blue","lightgreen","green","darkgreen","orange","orange1","yellow"))
@@ -33,9 +36,7 @@ pct <- data.frame(cbind(c(0,2,3,5,11,12,13,41,42,43),
 
 write.table(pct,paste0(gfcdir,"/color_table.txt"),row.names = F,col.names = F,quote = F)
 
-####### Read shapefile of segmentation from eCognition
-shapename <- paste0(segdir,"ScalePara.1_shape0_compact1.shp")
-base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
+
 
 # ####### Compute above 10% threshold for TC
 # system(sprintf("gdal_calc.py -A %s --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
@@ -67,7 +68,6 @@ base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 ####### Rasterize segments
 e <- extent(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
 r <- res(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
-e <- extent(readOGR(shapename,base))
 
 # dbf <- read.dbf(paste0(segdir,base,".dbf"))
 # write.dbf(dbf,paste0(segdir,"bckup_",base,".dbf"))

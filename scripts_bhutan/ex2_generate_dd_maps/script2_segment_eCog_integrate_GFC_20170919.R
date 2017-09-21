@@ -17,12 +17,24 @@ setwd(rootdir)
 rootdir <- paste0(getwd(),"/")
 
 gfcdir  <- paste0(rootdir,"gfc_2015/")
-segdir  <- paste0(rootdir,"segments_FREL/")
+segdir  <- paste0(rootdir,"segments_FREL/Scal1_0.1_Shape0_Compact1/")
 
 start_time <- Sys.time()
 
+####################  CREATE A PSEUDO COLOR TABLE
+cols <- col2rgb(c("black","lightgrey","red","blue","lightgreen","green","darkgreen","orange","orange1","yellow"))
+
+pct <- data.frame(cbind(c(0,2,3,5,11,12,13,41,42,43),
+                        cols[1,],
+                        cols[2,],
+                        cols[3,]
+)
+)
+
+write.table(pct,paste0(gfcdir,"/color_table.txt"),row.names = F,col.names = F,quote = F)
+
 ####### Read shapefile of segmentation from eCognition
-shapename <- paste0(segdir,"ScalePara2_shape0.1_compact0.2.shp")
+shapename <- paste0(segdir,"ScalePara.1_shape0_compact1.shp")
 base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 
 # ####### Compute above 10% threshold for TC
@@ -52,25 +64,30 @@ base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 #   ))
 # }
 # 
-# ####### Rasterize segments
-# e <- extent(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
-# r <- res(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
-# 
-# system(sprintf("gdal_rasterize -a %s -l %s -ot UInt32 -te %s %s %s %s -tr %s %s -co \"COMPRESS=LZW\" %s %s",
-#                "ID" ,
-#                base,
-#                e@xmin,
-#                e@ymin,
-#                e@xmax,
-#                e@ymax,
-#                r[1],
-#                r[1],
-#                shapename,
-#                paste0(segdir,"segments.tif")
-#                ))
-# 
-# 
-# ###### Create datamask
+####### Rasterize segments
+e <- extent(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
+r <- res(raster(paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif")))
+
+# dbf <- read.dbf(paste0(segdir,base,".dbf"))
+# write.dbf(dbf,paste0(segdir,"bckup_",base,".dbf"))
+# dbf$ID <- row(dbf)[,1]
+# write.dbf(dbf,paste0(segdir,base,".dbf"))
+
+system(sprintf("gdal_rasterize -a %s -l %s -ot UInt32 -te %s %s %s %s -tr %s %s -co \"COMPRESS=LZW\" %s %s",
+               "ID" ,
+               base,
+               e@xmin,
+               e@ymin,
+               e@xmax,
+               e@ymax,
+               r[1],
+               r[1],
+               shapename,
+               paste0(segdir,"segments.tif")
+               ))
+
+
+###### Create datamask
 # system(sprintf("gdal_rasterize -a %s -l %s -te %s %s %s %s -tr %s %s -co \"COMPRESS=LZW\" %s %s",
 #                "id" ,
 #                "bhutan",
@@ -83,40 +100,40 @@ base <- substr(basename(shapename),1,nchar(basename(shapename))-4)
 #                paste0("boundaries_bhutan/bhutan.shp"),
 #                paste0(gfcdir,"data_mask.tif")
 # ))
-# 
-# 
-# #################### Mask out no data polygons
-# system(sprintf("gdal_calc.py -A %s -B %s --type=UInt32 --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
-#                paste0(segdir,"segments.tif"),
-#                paste0(gfcdir,"data_mask.tif"),
-#                paste0(segdir,"mask_segments.tif"),
-#                "A*(B>0)"
-# ))
-# 
-# 
-# ####### Compute zonal stats for LOSSES
-# system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
-#                paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif"),
-#                paste0(gfcdir,"tmp_zonal_loss.txt"),
-#                paste0(segdir,"mask_segments.tif"),
-#                14
-# ))
-# 
-# ####### Compute zonal stats for GAINS
-# system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
-#                paste0(gfcdir,"druk_gfc_gain_bhutan.tif"),
-#                paste0(gfcdir,"tmp_zonal_gain.txt"),
-#                paste0(segdir,"mask_segments.tif"),
-#                1
-#                ))
-# 
-# ####### Compute zonal stats for TREECOVER
-# system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
-#                paste0(gfcdir,"druk_gfc_tc2000_gt10_bhutan.tif"),
-#                paste0(gfcdir,"tmp_zonal_tc2000.txt"),
-#                paste0(segdir,"mask_segments.tif"),
-#                100
-# ))
+
+
+#################### Mask out no data polygons
+system(sprintf("gdal_calc.py -A %s -B %s --type=UInt32 --co COMPRESS=LZW --outfile=%s --calc=\"%s\"",
+               paste0(segdir,"segments.tif"),
+               paste0(gfcdir,"data_mask.tif"),
+               paste0(segdir,"mask_segments.tif"),
+               "A*(B>0)"
+))
+
+
+####### Compute zonal stats for LOSSES
+system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
+               paste0(gfcdir,"druk_gfc_lossyear_gt10_bhutan.tif"),
+               paste0(gfcdir,"tmp_zonal_loss.txt"),
+               paste0(segdir,"mask_segments.tif"),
+               14
+))
+
+####### Compute zonal stats for GAINS
+system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
+               paste0(gfcdir,"druk_gfc_gain_bhutan.tif"),
+               paste0(gfcdir,"tmp_zonal_gain.txt"),
+               paste0(segdir,"mask_segments.tif"),
+               1
+               ))
+
+####### Compute zonal stats for TREECOVER
+system(sprintf("oft-his -i %s -o %s -um %s -maxval %s",
+               paste0(gfcdir,"druk_gfc_tc2000_gt10_bhutan.tif"),
+               paste0(gfcdir,"tmp_zonal_tc2000.txt"),
+               paste0(segdir,"mask_segments.tif"),
+               100
+))
 
 
 ####### Read zonal stats and rename columns
@@ -132,7 +149,6 @@ head(df_lossyr)
 head(df_tc2000)
 
 
-quantile(df$total)
 ####### Bind loss and Tree cover in the same data frame
 df <- cbind(df_lossyr,df_tc2000[,4:103],df_gain[,"gain"])
 names(df)[ncol(df)] <- "gain"
@@ -217,17 +233,6 @@ system(sprintf("(echo %s; echo 1; echo 1; echo 3; echo 0) | oft-reclass  -oi %s 
                paste0(segdir,"mask_segments.tif")
 ))
 
-####################  CREATE A PSEUDO COLOR TABLE
-cols <- col2rgb(c("black","lightgrey","red","blue","lightgreen","green","darkgreen","orange","orange1","yellow"))
-
-pct <- data.frame(cbind(c(0,2,3,5,11,12,13,41,42,43),
-                        cols[1,],
-                        cols[2,],
-                        cols[3,]
-)
-)
-
-write.table(pct,paste0(gfcdir,"/color_table.txt"),row.names = F,col.names = F,quote = F)
 
 #################### CONVERT TO BYTE
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
@@ -246,7 +251,7 @@ system(sprintf("(echo %s) | oft-addpct.py %s %s",
 #################### Compress
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
                paste0(gfcdir,"tmp_pct_byte_reclass_segments.tif"),
-               paste0(gfcdir,"DD_2004_2009_druk_20170919.tif")
+               paste0(gfcdir,"DD_2004_2009_druk_20170921.tif")
 ))
 
 
@@ -258,18 +263,6 @@ system(sprintf("(echo %s; echo 1; echo 1; echo 4; echo 0) | oft-reclass  -oi %s 
                paste0(segdir,"mask_segments.tif")
 ))
 
-####################  CREATE A PSEUDO COLOR TABLE
-cols <- col2rgb(c("black","lightgrey","red","blue","lightgreen","green","darkgreen","orange","orange1","yellow"))
-
-pct <- data.frame(cbind(c(0,2,3,5,11,12,13,41,42,43),
-                        cols[1,],
-                        cols[2,],
-                        cols[3,]
-)
-)
-
-write.table(pct,paste0(gfcdir,"/color_table.txt"),row.names = F,col.names = F,quote = F)
-
 #################### CONVERT TO BYTE
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
                paste0(gfcdir,"tmp_reclass_segments.tif"),
@@ -287,18 +280,18 @@ system(sprintf("(echo %s) | oft-addpct.py %s %s",
 #################### Compress
 system(sprintf("gdal_translate -ot Byte -co COMPRESS=LZW %s %s",
                paste0(gfcdir,"tmp_pct_byte_reclass_segments.tif"),
-               paste0(gfcdir,"DD_2009_2014_druk_20170919.tif")
+               paste0(gfcdir,"DD_2009_2014_druk_20170921.tif")
 ))
 
 
 
 system(sprintf("oft-stat -i %s -o %s -um %s -nostd",
-               paste0(gfcdir,"DD_2009_2014_druk_20170907.tif"),
-               paste0(gfcdir,"stat_2009_2014_DD_druk_20170907.txt"),
-               paste0(gfcdir,"DD_2009_2014_druk_20170907.tif")
+               paste0(gfcdir,"DD_2009_2014_druk_20170919.tif"),
+               paste0(gfcdir,"stat_2009_2014_DD_druk_20170919.txt"),
+               paste0(gfcdir,"DD_2009_2014_druk_20170919.tif")
 ))
 
-stats_pixel <- read.table(paste0(gfcdir,"stat_2009_2014_DD_druk_20170907.txt"))
+stats_pixel <- read.table(paste0(gfcdir,"stat_2009_2014_DD_druk_20170919.txt"))
 
 ####### Clean
 system(sprintf("rm %s",
